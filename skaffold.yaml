@@ -17,4 +17,4 @@ build:
       sync:
         manual:
           - dest: .
-            src: 'src/**/*.ts'
+            src: "src/**/*.ts"
