@@ -1,0 +1,60 @@
+TODO: Consider replacing express-validator with Ajv.
+
+To perform schema validation using Ajv in your Express.js route, you can follow these steps:
+
+1. First, install the `ajv` package, which is a JSON Schema validator for Node.js. You can install it using npm:
+
+   ```
+   npm install ajv
+   ```
+
+2. Create a JSON schema that defines the validation rules for your request body. Here's an example JSON schema for your `signup` route:
+
+   ```json
+   // signup-schema.json
+   {
+     "type": "object",
+     "properties": {
+       "email": { "type": "string", "format": "email" },
+       "password": { "type": "string", "minLength": 4, "maxLength": 20 }
+     },
+     "required": ["email", "password"]
+   }
+   ```
+
+3. In your Express.js route file (`signup.ts`), you can use Ajv to validate the request body against the JSON schema. Here's the modified code:
+
+   ```typescript
+   import express, { Request, Response } from 'express';
+   import Ajv from 'ajv';
+
+   const router = express.Router();
+
+   // Create an instance of Ajv and load the JSON schema
+   const ajv = new Ajv();
+   const schema = require('./signup-schema.json'); // Replace with the path to your JSON schema
+
+   const validate = ajv.compile(schema);
+
+   router.post('/api/users/signup', (req: Request, res: Response) => {
+     // Validate the request body against the schema
+     const valid = validate(req.body);
+
+     if (!valid) {
+       // Schema validation failed
+       const errors = validate.errors;
+       return res.status(400).json({ errors });
+     }
+
+     // Request body is valid
+     const { email, password } = req.body;
+
+     // Handle the rest of your route logic here
+   });
+
+   export { router as signUpRouter };
+   ```
+
+In this code, we've created an instance of Ajv, loaded your JSON schema from a file (replace `'./signup-schema.json'` with the actual path to your schema file), and compiled the schema for validation. Then, in the route handler, we use `ajv.compile` to create a validation function and call it with the request body (`req.body`). If validation fails, the errors are returned as a JSON response with a 400 status code. If validation passes, you can continue with your route logic.
+
+Make sure to replace `'./signup-schema.json'` with the correct path to your JSON schema file. This approach provides schema validation using Ajv in place of `express-validator`.
